@@ -214,7 +214,7 @@ quicksort_done:
 		add $8, %rsp
 		ret
 
-# void partition(long * a, long index_lo, long index_hi)
+# long partition(long * a, long index_lo, long index_hi)
 partition:
 		# int * a -> rdi
 		# long lo -> rsi
@@ -308,7 +308,7 @@ partition_second_do:
 		cmp %r14,(%rdi, %rax, 8)			# rdi->A [rax->j * 8 (becuase byte index)]
 											# Flags are now set such that:
 											# A[j] op pivot
-		jg partition_first_do				# A[j] > pivot
+		jg partition_second_do				# A[j] > pivot
 
 		# -------------------------------------------------------------------------------------------------------------
 		#         if i >= j then
