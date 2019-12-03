@@ -138,7 +138,8 @@ printLoop:
 		decq %rcx						# decrement loop var
 		# prepare printf
 
-		movq $message,%rdi				# set the message to print
+		# movq $message,%rdi				# set the message to print
+		leaq message(%rip),%rdi			# Load the message using PIC
 		movq (%rsp, %rcx, 8),%rsi		# Setup the number to print
 		movq $0, %rax					# No floating point args
 		push %rcx						# save rcx cause thats our counter
