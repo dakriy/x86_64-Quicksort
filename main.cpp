@@ -39,7 +39,7 @@ int main(int argc, char ** argv) {
     // Apparently resizing and using if slightly faster than reserving and then push backing
     args.resize(argc - 1);
     for (long i = 1; i < argc; ++i) {
-        args[i] = atol(argv[i]);
+        args[i - 1] = atol(argv[i]);
     }
     quickSort(args, 0, argc - 1);
 
