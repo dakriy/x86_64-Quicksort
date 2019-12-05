@@ -45,7 +45,7 @@ int main(int argc, char ** argv) {
 
     // Comment out the printing of lines for benchmarking
     for (auto elem : args) {
-        printf("%ld\n", elem);
+        std::cout << elem << std::endl;
     }
 
 	return 0;
