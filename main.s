@@ -39,13 +39,13 @@
 #movq $message, %rdi
 #movq $0, %rax # No floating point args
 #call printf
+# UNCOMMENT THE JUMP INSTRUCTION RIGHT BEFORE printLoop WHEN BENCHMARKING
 
         .global main
 
         .text
         .extern printf
         .extern atol
-        .extern memcpy
 
 main:
         # -------------------------------------------------------------
@@ -60,6 +60,8 @@ main:
         # REGISTERS I CARE ABOUT
         # r15: This contains the number of inputted integers to sort
         #       r15 is callee saved
+        # r14: This contains address of all of the arguments
+        # r13: This contains my counter for this function
         # -------------------------------------------------------------
         # rbp is calleee saved
         push %rbp
@@ -74,37 +76,31 @@ main:
 
         movq %rdi,%r15                  # Save number of arguments to r15
 
-        # Just allocate space on stack and memcpy the array of addresses with strings to resolve
-        # into numbers
-        # RSI has the pointer to the c array taht I wanna copy
+        # RSI has the pointer to the c array taht I wanna copy, lets move it to
+        # r14 so I don't have to do a bunch of pushing and popping from the stack
+        movq %rsi,%r14
 
+        # Just allocate space on stack for all of the numbers
         # Get num of bytes to allocaate and copy
         shlq $3,%rdi                    # shift left 3 times is multiply by 8 which gives us number of bytes
         subq %rdi,%rsp                  # Allocate stack space
 
 
-        # memcpy(dst (rsp), src (rsi), size (rdi))
-        movq %rdi,%rdx                  # Set size first as we need to overwrite register it uses later for the source
-        movq %rsp,%rdi                  # Set destination address
-        addq $8,%rsi                    # Add 8 to RSI as the first argument is pointer to the program
-        call memcpy
-
         # Resolve all of the string numbers into integer numbers
-        movq %r15,%rcx                  # rax is our loop counter.
+        movq %r15,%r13                  # rax is our loop counter.
 convertLoop:
-        decq %rcx
-        # rcx is a word too high, so when we use it we need to pre decrement it
-        movq (%rsp, %rcx, 8),%rdi       # Get offset of the current pointer and get it ready to send to atoi
+        movq (%r14, %r13, 8),%rdi      # Get offset of the current pointer and get it ready to send to atoi
 
         # Do atoi conversion
-        pushq %rcx
         call atol
-        popq %rcx
 
-        movq %rax, (%rsp, %rcx, 8)      # Get the number parsed and overwrite it's address on the stack
+        movq %rax, (%rsp, %r13, 8)      # Get the number parsed and write it to the stack memory allocated for it
+
+        decq %r13
 
         # Check loop status
-        jrcxz sort
+        cmp $0,%r13
+        jz sort
         jmp convertLoop
 sort:
 
@@ -134,6 +130,11 @@ sort:
         # lld is the specifier I want
         # RSP has arr, and r15 is the length, so just start printing them
         movq %r15,%rcx                  # move the total count into count register
+
+        # UNCOMMENT THE FOLLOWING LINE WHEN BENCHMARKING
+        # xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+        # jmp byebye
+        # xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 printLoop:
         decq %rcx                       # decrement loop var
         # prepare printf
@@ -341,4 +342,4 @@ partition_done:
 
 
 message:
-        .ascii "%lld\n\0"
+        .ascii "%ld\n\0"
